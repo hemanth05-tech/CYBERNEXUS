@@ -1,0 +1,31 @@
+<body>
+    <h1>Counter</h1>
+    <p>Count: <span id="count">0</span></p>
+    <button onclick="increment()">Increment</button>
+    <button onclick="decrement()">Decrement</button>
+    <button onclick="reset()">Reset</button>
+
+    <script>
+        let count = 0;
+        const countElement = document.getElementById('count');
+
+        function updateCount() {
+            countElement.textContent = count;
+        }
+
+        function increment() {
+            count++;
+            updateCount();
+        }
+
+        function decrement() {
+            count--;
+            updateCount();
+        }
+
+        function reset() {
+            count = 0;
+            updateCount();
+        }
+    </script>
+</body>
