@@ -1,0 +1,61 @@
+/* filepath: terminal-web-app/css/style.css */
+/* =========================================================
+   TERMINAL WEB APP STYLES
+========================================================= */
+
+body {
+    background-color: #000;
+    color: #00ff66;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.terminal {
+    border: 1px solid #00ff66;
+    padding: 20px;
+    height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+}
+
+.input-line {
+    display: flex;
+    align-items: center;
+}
+
+.input-line:before {
+    content: '> ';
+    color: #00ff66;
+}
+
+.input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #00ff66;
+    font-family: inherit;
+    font-size: 1em;
+    outline: none;
+}
+
+.cursor {
+    display: inline-block;
+    width: 10px;
+    height: 20px;
+    background: #00ff66;
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+.output {
+    white-space: pre-wrap;
+    margin-top: 10px;
+}
