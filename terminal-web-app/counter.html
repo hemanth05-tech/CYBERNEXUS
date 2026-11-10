@@ -1,31 +1,77 @@
-<body>
-    <h1>Counter</h1>
-    <p>Count: <span id="count">0</span></p>
-    <button onclick="increment()">Increment</button>
-    <button onclick="decrement()">Decrement</button>
-    <button onclick="reset()">Reset</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050805">
+    <title>CyberNexus | Counter Demo</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            font-family: "Cascadia Code", Consolas, monospace;
+            background: #050805;
+            color: #e8fff2;
+        }
 
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        main {
+            width: min(440px, 100%);
+            padding: 32px;
+            border: 1px solid rgba(57, 255, 136, 0.3);
+            background: #09130d;
+        }
+
+        a { color: #00ff66; }
+        h1 { margin-top: 32px; }
+        output { color: #00ff66; font-size: 2rem; }
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; }
+        button {
+            padding: 10px 14px;
+            border: 1px solid rgba(57, 255, 136, 0.35);
+            background: transparent;
+            color: #e8fff2;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        button:hover,
+        button:focus-visible { border-color: #00ff66; }
+        button:focus-visible,
+        a:focus-visible { outline: 2px solid #8affb5; outline-offset: 3px; }
+    </style>
+</head>
+<body>
+    <main>
+        <a href="index.html">← Simulated terminal</a>
+        <h1>Counter demo</h1>
+        <p>Count: <output id="count" aria-live="polite">0</output></p>
+        <div class="controls" aria-label="Counter controls">
+            <button type="button" data-action="increment">Increment</button>
+            <button type="button" data-action="decrement">Decrement</button>
+            <button type="button" data-action="reset">Reset</button>
+        </div>
+    </main>
     <script>
         let count = 0;
-        const countElement = document.getElementById('count');
+        const countOutput = document.getElementById("count");
 
-        function updateCount() {
-            countElement.textContent = count;
-        }
+        document.querySelector(".controls").addEventListener("click", (event) => {
+            const button = event.target instanceof Element ? event.target.closest("button") : null;
+            if (!button) return;
 
-        function increment() {
-            count++;
-            updateCount();
-        }
-
-        function decrement() {
-            count--;
-            updateCount();
-        }
-
-        function reset() {
-            count = 0;
-            updateCount();
-        }
+            const action = button.dataset.action;
+            if (action === "increment") count++;
+            if (action === "decrement") count--;
+            if (action === "reset") count = 0;
+            countOutput.textContent = String(count);
+        });
     </script>
 </body>
+</html>

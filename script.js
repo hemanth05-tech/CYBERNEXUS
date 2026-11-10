@@ -19,13 +19,162 @@ const observer = new IntersectionObserver((entries) => {
 revealElements.forEach((element) => observer.observe(element));
 
 function searchTools() {
-  const search = document.getElementById("toolSearch").value.toLowerCase().trim();
+  const searchInput = document.getElementById("toolSearch");
+  const status = document.getElementById("toolSearchStatus");
+  const emptyState = document.getElementById("toolEmptyState");
+  if (!searchInput || !status || !emptyState) return;
+
+  const search = searchInput.value.trim().toLowerCase();
   const tools = document.querySelectorAll(".tool-item");
+  let visibleCount = 0;
+
   tools.forEach((tool) => {
-    const text = tool.innerText.toLowerCase();
-    tool.style.display = text.includes(search) ? "" : "none";
+    const matches = tool.textContent.toLowerCase().includes(search);
+    tool.hidden = !matches;
+    if (matches) visibleCount++;
   });
+
+  emptyState.hidden = visibleCount > 0;
+  status.textContent = visibleCount === 1 ? "Showing 1 tool" : `Showing ${visibleCount} tools`;
 }
+
+const toolSearch = document.getElementById("toolSearch");
+if (toolSearch) toolSearch.addEventListener("input", searchTools);
+
+const learningStorageKey = "cybernexus-learning-progress-v1";
+const courseToggleButtons = Array.from(document.querySelectorAll(".course-toggle"));
+const dailyGoalInputs = Array.from(document.querySelectorAll(".daily-goal"));
+const learningSaveStatus = document.getElementById("learningSaveStatus");
+const courseIds = courseToggleButtons.map((button) => button.dataset.courseId);
+const goalIds = dailyGoalInputs.map((input) => input.dataset.goalId);
+
+function getLocalDateKey() {
+  const date = new Date();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function loadLearningState() {
+  const state = {
+    completedCourses: {},
+    completedGoals: [],
+    goalsDate: getLocalDateKey()
+  };
+
+  try {
+    const saved = window.localStorage.getItem(learningStorageKey);
+    if (!saved) return state;
+
+    const parsed = JSON.parse(saved);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Saved learning progress has an invalid format.");
+    }
+
+    courseIds.forEach((id) => {
+      state.completedCourses[id] = parsed.completedCourses?.[id] === true;
+    });
+
+    if (parsed.goalsDate === state.goalsDate && Array.isArray(parsed.completedGoals)) {
+      state.completedGoals = parsed.completedGoals.filter((id) => goalIds.includes(id));
+    }
+  } catch (error) {
+    console.error("Could not load CyberNexus learning progress.", error);
+    if (learningSaveStatus) {
+      learningSaveStatus.textContent = "Could not load saved progress. Changes will be kept for this visit.";
+    }
+  }
+
+  return state;
+}
+
+const learningState = loadLearningState();
+
+function saveLearningState() {
+  learningState.goalsDate = getLocalDateKey();
+  try {
+    window.localStorage.setItem(learningStorageKey, JSON.stringify(learningState));
+    if (learningSaveStatus) learningSaveStatus.textContent = "Progress saves in this browser.";
+  } catch (error) {
+    console.error("Could not save CyberNexus learning progress.", error);
+    if (learningSaveStatus) {
+      learningSaveStatus.textContent = "Could not save progress. Changes will last for this visit.";
+    }
+  }
+}
+
+function renderLearningDashboard() {
+  const completedCourseCount = courseIds.filter((id) => learningState.completedCourses[id]).length;
+  const completedGoalCount = goalIds.filter((id) => learningState.completedGoals.includes(id)).length;
+  const progressPercent = courseIds.length ? Math.round((completedCourseCount / courseIds.length) * 100) : 0;
+  const progressLabel = document.getElementById("learningProgressLabel");
+  const progressPercentLabel = document.getElementById("learningProgressPercent");
+  const progressBar = document.getElementById("learningProgressBar");
+  const progressFill = progressBar?.querySelector("span");
+  const moduleCount = document.getElementById("dashboardModuleCount");
+  const goalCount = document.getElementById("dashboardGoalCount");
+  const goalsSummary = document.getElementById("dailyGoalsSummary");
+  const continueLink = document.getElementById("continueLearning");
+
+  if (progressLabel) progressLabel.textContent = `${completedCourseCount} of ${courseIds.length} modules complete`;
+  if (progressPercentLabel) progressPercentLabel.textContent = `${progressPercent}%`;
+  if (progressBar) progressBar.setAttribute("aria-valuenow", String(completedCourseCount));
+  if (progressFill) progressFill.style.width = `${progressPercent}%`;
+  if (moduleCount) moduleCount.textContent = `${completedCourseCount}/${courseIds.length}`;
+  if (goalCount) goalCount.textContent = `${completedGoalCount}/${goalIds.length}`;
+  if (goalsSummary) goalsSummary.textContent = `${completedGoalCount} of ${goalIds.length} complete`;
+
+  courseToggleButtons.forEach((button) => {
+    const isComplete = learningState.completedCourses[button.dataset.courseId] === true;
+    const course = button.closest(".modern-card");
+    button.setAttribute("aria-pressed", String(isComplete));
+    button.textContent = isComplete ? "Completed" : "Mark complete";
+    if (course) course.classList.toggle("is-complete", isComplete);
+  });
+
+  dailyGoalInputs.forEach((input) => {
+    input.checked = learningState.completedGoals.includes(input.dataset.goalId);
+  });
+
+  if (continueLink) {
+    const nextCourse = courseToggleButtons.find((button) => !learningState.completedCourses[button.dataset.courseId]);
+    if (nextCourse) {
+      const course = nextCourse.closest(".modern-card");
+      const title = course?.querySelector("h3")?.textContent || "Next learning module";
+      continueLink.href = `#${course?.id || "courses"}`;
+      continueLink.querySelector("small").textContent = "NEXT UP";
+      continueLink.querySelector("strong").textContent = title;
+    } else {
+      continueLink.href = "#courses";
+      continueLink.querySelector("small").textContent = "LEARNING PATH";
+      continueLink.querySelector("strong").textContent = "All modules complete — review your progress";
+    }
+  }
+}
+
+courseToggleButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const id = button.dataset.courseId;
+    learningState.completedCourses[id] = !learningState.completedCourses[id];
+    saveLearningState();
+    renderLearningDashboard();
+  });
+});
+
+dailyGoalInputs.forEach((input) => {
+  input.addEventListener("change", () => {
+    const id = input.dataset.goalId;
+    if (input.checked && !learningState.completedGoals.includes(id)) {
+      learningState.completedGoals.push(id);
+    } else {
+      learningState.completedGoals = learningState.completedGoals.filter((goalId) => goalId !== id);
+    }
+    saveLearningState();
+    renderLearningDashboard();
+  });
+});
+
+renderLearningDashboard();
 
 const sections = document.querySelectorAll("section[id]");
 const navLinks = document.querySelectorAll(".nav-link");
@@ -87,7 +236,7 @@ function appendCommandLine(text) {
 function printOutput(text) {
   const output = document.createElement("div");
   output.className = "output-block";
-  output.innerHTML = text.replace(/\n/g, "<br>");
+  output.textContent = text;
   commandOutput.appendChild(output);
 }
 
@@ -100,33 +249,39 @@ function runCommand(command) {
 
   switch (normalized) {
     case "help":
-      printOutput("Available commands:<br>help &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show available commands<br>clear &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Clear terminal<br>status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show system status<br>dashboard &nbsp;Open dashboard<br>network &nbsp;&nbsp;&nbsp;&nbsp;Network information<br>tools &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Security tools<br>labs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Practice labs<br>security &nbsp;&nbsp;&nbsp;Security overview<br>about &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;About CyberNexus<br>whoami &nbsp;&nbsp;&nbsp;&nbsp;Current user<br>date &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current date<br>version &nbsp;&nbsp;&nbsp;&nbsp;Show version");
+      printOutput("Available commands:\nhelp        Show available commands\nclear       Clear terminal\nstatus      Show system status\nprogress    View learning progress\ndashboard   Open dashboard\nnetwork     Network information\ntools       Security tools\nlabs        Practice labs\nsecurity    Security overview\nabout       About CyberNexus\nwhoami      Current user\ndate        Current date\nversion     Show version");
       break;
     case "clear":
       commandOutput.innerHTML = "";
       break;
     case "status":
-      printOutput("SYSTEM STATUS<br>[+] NETWORKS: MONITORED<br>[+] THREAT FEED: ACTIVE<br>[+] SECURITY MODULES: ONLINE<br>[+] LEARNING ENVIRONMENT: READY");
+      printOutput("LEARNING PLATFORM STATUS\n[+] NETWORK MONITORING: NOT CONNECTED\n[+] THREAT FEED: NOT CONNECTED\n[+] SECURITY CONTENT: AVAILABLE\n[+] HANDS-ON LAB: SIMULATED");
       break;
+    case "progress": {
+      const completeCount = courseIds.filter((id) => learningState.completedCourses[id]).length;
+      const completedGoals = goalIds.filter((id) => learningState.completedGoals.includes(id)).length;
+      printOutput(`LEARNING PROGRESS\n[+] MODULES: ${completeCount}/${courseIds.length} COMPLETE\n[+] TODAY'S GOALS: ${completedGoals}/${goalIds.length} COMPLETE`);
+      break;
+    }
     case "dashboard":
       document.getElementById("home").scrollIntoView({ behavior: "smooth", block: "start" });
-      printOutput("Opening dashboard...<br>SYSTEM STATUS ONLINE");
+      printOutput("Opening dashboard...\nSYSTEM STATUS ONLINE");
       break;
     case "network":
       document.getElementById("tools").scrollIntoView({ behavior: "smooth", block: "start" });
-      printOutput("Network overview loaded.<br>Active modules: packet analysis, monitoring, and discovery.");
+      printOutput("Network overview loaded.\nActive modules: packet analysis, monitoring, and discovery.");
       break;
     case "tools":
       document.getElementById("tools").scrollIntoView({ behavior: "smooth", block: "start" });
-      printOutput("Loading tool inventory...<br>Security tools ready.");
+      printOutput("Loading tool inventory...\nSecurity tools ready.");
       break;
     case "labs":
       document.getElementById("labs").scrollIntoView({ behavior: "smooth", block: "start" });
-      printOutput("Opening lab environment...<br>Practice mode enabled.");
+      printOutput("Opening lab environment...\nPractice mode enabled.");
       break;
     case "security":
       document.getElementById("courses").scrollIntoView({ behavior: "smooth", block: "start" });
-      printOutput("Security overview loaded.<br>Focus areas: fundamentals, cloud, web, and forensics.");
+      printOutput("Security overview loaded.\nFocus areas: fundamentals, cloud, web, and forensics.");
       break;
     case "about":
       printOutput("CyberNexus is a cybersecurity learning platform focused on hands-on education, security tools, and practical defense training.");
@@ -178,8 +333,8 @@ if (closeAI) {
 function addMessage(text, isUser = false) {
   const msg = document.createElement("div");
   msg.className = `ai-message ${isUser ? "user-message" : "bot-message"}`;
-  const bubble = document.createElement("div");
-  bubble.innerHTML = text;
+  const bubble = document.createElement(isUser ? "div" : "span");
+  bubble.textContent = text;
   msg.appendChild(bubble);
   aiMessages.appendChild(msg);
   aiMessages.scrollTop = aiMessages.scrollHeight;

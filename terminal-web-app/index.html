@@ -3,18 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Web App</title>
+    <meta name="description" content="A safe, simulated command-line lab for learning basic terminal commands.">
+    <meta name="theme-color" content="#050805">
+    <title>CyberNexus | Simulated Terminal Lab</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="terminal">
-        <div class="terminal-output" id="terminal-output"></div>
-        <div class="terminal-input">
-            <span class="prompt">></span>
-            <input type="text" id="command-input" autofocus />
-        </div>
-    </div>
-    <script src="js/main.js"></script>
-    
+    <main class="terminal" aria-label="Simulated terminal">
+        <header class="terminal-header">
+            <a href="../index.html" class="back-link">← CyberNexus</a>
+            <h1>Simulated Terminal Lab</h1>
+            <p>Practice a few safe, local commands. This is not a real system shell.</p>
+        </header>
+        <section class="terminal-window" aria-label="Terminal session">
+            <div class="window-bar" aria-hidden="true">
+                <span></span><span></span><span></span>
+                <span class="window-title">cybernexus-lab</span>
+            </div>
+            <div class="terminal-output" id="terminal-output" aria-live="polite" aria-label="Terminal output">
+                <p class="output-line">CyberNexus training terminal</p>
+                <p class="output-line">Type <strong>help</strong> to see available commands.</p>
+            </div>
+            <div class="terminal-input">
+                <label class="prompt" for="command-input">guest@cybernexus:~$</label>
+                <input type="text" id="command-input" autofocus autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command" placeholder="help">
+            </div>
+        </section>
+    </main>
+    <script src="js/main.js" defer></script>
 </body>
 </html>

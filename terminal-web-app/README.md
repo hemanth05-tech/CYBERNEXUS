@@ -1,47 +1,27 @@
-# Terminal Web App
+# CyberNexus Simulated Terminal Lab
 
 ## Overview
-The Terminal Web App is a simple web application that simulates a terminal interface in a web browser. It allows users to input commands and see the output as if they were using a real terminal.
+This browser-only terminal is a safe, simulated command-line exercise. It does not execute operating-system commands or access the host machine.
 
 ## Project Structure
 ```
 terminal-web-app/
-├── index.html        # Main HTML document for the terminal web app
+├── index.html        # Main HTML document for the simulated terminal
 ├── css/
-│   └── style.css     # Styles for the terminal web app
+│   └── style.css     # Responsive terminal styles
 ├── js/
-│   └── main.js       # JavaScript code for handling user input and commands
+│   └── main.js       # Local command handling and history
 └── README.md         # Documentation for the project
 ```
 
 ## Features
-- Terminal-like interface with a dark background and green text.
-- Supports user input and command processing.
-- Displays command history and output formatting.
+- Responsive terminal interface with keyboard-accessible input.
+- `help`, `clear`, and `echo <text>` commands.
+- Up/down arrow command history.
+- User-entered text is rendered as text and is never executed as HTML or a shell command.
 
 ## Getting Started
-
-### Prerequisites
-- A modern web browser (Chrome, Firefox, Safari, etc.)
-
-### Installation
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   ```
-2. Navigate to the project directory:
-   ```
-   cd terminal-web-app
-   ```
-
-### Running the App
-1. Open `index.html` in your web browser.
-2. Start typing commands in the terminal interface.
-
-## Future Enhancements
-- Implement additional commands and functionalities.
-- Improve command history navigation.
-- Add support for more complex command outputs.
+Open `index.html` in a modern web browser and type `help` to see the available simulated commands.
 
 ## License
-This project is licensed under the MIT License.
+No license file is included. Add one before distributing or reusing this project.

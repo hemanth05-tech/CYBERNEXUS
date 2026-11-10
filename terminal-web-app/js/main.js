@@ -1,62 +1,65 @@
-// This file contains the JavaScript code for the terminal web app.
-// It handles user input, processes commands, and updates the terminal display.
+const terminalInput = document.getElementById("command-input");
+const terminalOutput = document.getElementById("terminal-output");
+const commandHistory = [];
+let historyIndex = 0;
 
-document.addEventListener('DOMContentLoaded', () => {
-    const terminalInput = document.getElementById('terminal-input');
-    const terminalOutput = document.getElementById('terminal-output');
-    const commandHistory = [];
-    let historyIndex = -1;
+if (!(terminalInput instanceof HTMLInputElement) || !terminalOutput) {
+    throw new Error("The simulated terminal is missing its input or output element.");
+}
 
-    terminalInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            const command = terminalInput.value;
-            commandHistory.push(command);
-            historyIndex = commandHistory.length; // Reset history index
-            processCommand(command);
-            terminalInput.value = '';
-        } else if (event.key === 'ArrowUp') {
-            if (historyIndex > 0) {
-                historyIndex--;
-                terminalInput.value = commandHistory[historyIndex];
-            }
-        } else if (event.key === 'ArrowDown') {
-            if (historyIndex < commandHistory.length - 1) {
-                historyIndex++;
-                terminalInput.value = commandHistory[historyIndex] || '';
-            } else {
-                historyIndex = commandHistory.length; // Reset to the end
-                terminalInput.value = '';
-            }
-        }
-    });
+function appendOutput(text, className = "output-line") {
+    const line = document.createElement("p");
+    line.className = className;
+    line.textContent = text;
+    terminalOutput.appendChild(line);
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
 
-    function processCommand(command) {
-        const output = document.createElement('div');
-        output.className = 'output-line';
-        output.textContent = `> ${command}`; // Display the command
-        terminalOutput.appendChild(output);
+function runCommand(rawCommand) {
+    const command = rawCommand.trim();
+    if (!command) return;
 
-        // Simulate command processing
-        setTimeout(() => {
-            const response = simulateCommand(command);
-            const responseOutput = document.createElement('div');
-            responseOutput.className = 'output-line';
-            responseOutput.textContent = response; // Display the response
-            terminalOutput.appendChild(responseOutput);
-            terminalOutput.scrollTop = terminalOutput.scrollHeight; // Auto-scroll
-        }, 500);
+    appendOutput(`guest@cybernexus:~$ ${command}`, "output-line command");
+    commandHistory.push(command);
+    historyIndex = commandHistory.length;
+
+    if (/^clear$/i.test(command)) {
+        terminalOutput.replaceChildren();
+        return;
     }
 
-    function simulateCommand(command) {
-        // Basic command simulation
-        switch (command.toLowerCase()) {
-            case 'help':
-                return 'Available commands: help, clear, echo [text]';
-            case 'clear':
-                terminalOutput.innerHTML = ''; // Clear the terminal output
-                return '';
-            default:
-                return `Command not found: ${command}`;
+    if (/^help$/i.test(command)) {
+        appendOutput("Available commands:\nhelp              Show available commands\nclear             Clear the terminal\necho <text>      Print text to the terminal");
+        return;
+    }
+
+    const echoMatch = command.match(/^echo(?:\s+(.*))?$/i);
+    if (echoMatch) {
+        appendOutput(echoMatch[1] || "");
+        return;
+    }
+
+    appendOutput(`Command not found: ${command}`);
+}
+
+terminalInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        runCommand(terminalInput.value);
+        terminalInput.value = "";
+    } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (historyIndex > 0) {
+            historyIndex--;
+            terminalInput.value = commandHistory[historyIndex];
+        }
+    } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (historyIndex < commandHistory.length - 1) {
+            historyIndex++;
+            terminalInput.value = commandHistory[historyIndex];
+        } else {
+            historyIndex = commandHistory.length;
+            terminalInput.value = "";
         }
     }
 });

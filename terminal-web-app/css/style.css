@@ -1,61 +1,142 @@
-/* filepath: terminal-web-app/css/style.css */
-/* =========================================================
-   TERMINAL WEB APP STYLES
-========================================================= */
+:root {
+    color-scheme: dark;
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+    background: #050805;
+    color: #e8fff2;
+    --green: #00ff66;
+    --muted: #91aa99;
+    --line: rgba(57, 255, 136, 0.24);
+}
+
+* { box-sizing: border-box; }
 
 body {
-    background-color: #000;
-    color: #00ff66;
-    font-family: 'Courier New', Courier, monospace;
+    min-width: 320px;
+    min-height: 100vh;
     margin: 0;
-    padding: 20px;
-    overflow: hidden;
+    padding: clamp(18px, 5vw, 64px);
+    background:
+        radial-gradient(ellipse at 50% 0, rgba(0, 255, 102, 0.08), transparent 55%),
+        #050805;
+}
+
+a, input { font: inherit; }
+
+a:focus-visible,
+input:focus-visible {
+    outline: 2px solid #8affb5;
+    outline-offset: 3px;
 }
 
 .terminal {
-    border: 1px solid #00ff66;
-    padding: 20px;
-    height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+    width: min(940px, 100%);
+    margin: 0 auto;
 }
 
-.input-line {
+.terminal-header { margin-bottom: 24px; }
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 32px;
+    color: var(--green);
+    text-decoration: none;
+}
+
+.terminal-header h1 {
+    margin: 0;
+    font-size: clamp(1.7rem, 5vw, 2.8rem);
+    letter-spacing: -0.06em;
+}
+
+.terminal-header p {
+    margin: 12px 0 0;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.terminal-window {
+    display: flex;
+    min-height: min(62vh, 620px);
+    flex-direction: column;
+    border: 1px solid var(--line);
+    background: rgba(3, 8, 5, 0.94);
+    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35), 0 0 25px rgba(0, 255, 102, 0.05);
+}
+
+.window-bar {
     display: flex;
     align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--line);
 }
 
-.input-line:before {
-    content: '> ';
-    color: #00ff66;
+.window-bar > span:not(.window-title) {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--green);
+    opacity: 0.75;
 }
 
-.input {
+.window-bar > span:first-child { background: #ff6b6b; }
+.window-bar > span:nth-child(2) { background: #ffc857; }
+
+.window-title {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 0.75rem;
+}
+
+.terminal-output {
     flex: 1;
+    min-height: 280px;
+    max-height: 55vh;
+    overflow: auto;
+    padding: 24px;
+    color: var(--muted);
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.output-line { margin: 0 0 8px; white-space: pre-wrap; }
+.output-line.command { color: #e8fff2; }
+.output-line strong { color: var(--green); }
+
+.terminal-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 24px;
+    border-top: 1px solid var(--line);
+}
+
+.prompt {
+    color: var(--green);
+    white-space: nowrap;
+}
+
+.terminal-input input {
+    width: 100%;
+    min-width: 0;
+    padding: 6px 0;
+    border: 0;
     background: transparent;
-    border: none;
-    color: #00ff66;
-    font-family: inherit;
-    font-size: 1em;
-    outline: none;
+    color: #e8fff2;
 }
 
-.cursor {
-    display: inline-block;
-    width: 10px;
-    height: 20px;
-    background: #00ff66;
-    animation: blink 1s step-end infinite;
-    vertical-align: middle;
+.terminal-input input::placeholder { color: #668070; }
+.terminal-input input:focus-visible { outline-offset: 5px; }
+
+@media (max-width: 560px) {
+    body { padding: 22px 16px; }
+    .back-link { margin-bottom: 24px; }
+    .terminal-window { min-height: 68vh; }
+    .terminal-output { padding: 18px; }
+    .terminal-input { align-items: flex-start; flex-direction: column; padding: 16px 18px; }
 }
 
-@keyframes blink {
-    50% {
-        opacity: 0;
-    }
-}
-
-.output {
-    white-space: pre-wrap;
-    margin-top: 10px;
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; }
 }
