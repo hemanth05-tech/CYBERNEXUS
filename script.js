@@ -1,4 +1,4 @@
-﻿const particleContainer = document.getElementById("particles");
+const particleContainer = document.getElementById("particles");
 if (particleContainer) {
   for (let i = 0; i < 35; i++) {
     const particle = document.createElement("div");
@@ -138,16 +138,18 @@ function renderLearningDashboard() {
 
   if (continueLink) {
     const nextCourse = courseToggleButtons.find((button) => !learningState.completedCourses[button.dataset.courseId]);
+    const continueEyebrow = continueLink.querySelector("small");
+    const continueTitle = continueLink.querySelector("strong");
     if (nextCourse) {
       const course = nextCourse.closest(".modern-card");
       const title = course?.querySelector("h3")?.textContent || "Next learning module";
       continueLink.href = `#${course?.id || "courses"}`;
-      continueLink.querySelector("small").textContent = "NEXT UP";
-      continueLink.querySelector("strong").textContent = title;
+      if (continueEyebrow) continueEyebrow.textContent = "NEXT UP";
+      if (continueTitle) continueTitle.textContent = title;
     } else {
       continueLink.href = "#courses";
-      continueLink.querySelector("small").textContent = "LEARNING PATH";
-      continueLink.querySelector("strong").textContent = "All modules complete — review your progress";
+      if (continueEyebrow) continueEyebrow.textContent = "LEARNING PATH";
+      if (continueTitle) continueTitle.textContent = "All modules complete — review your progress";
     }
   }
 }
@@ -199,29 +201,125 @@ window.addEventListener("scroll", () => {
   });
 });
 
-const binaryContainer = document.getElementById("binary-rain");
-if (binaryContainer) {
-  const columnCount = window.innerWidth < 768 ? 24 : 42;
+const matrixContainer = document.getElementById("binary-rain");
+const matrixCharacters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン012345789ABCDEFGHIJKLMNOPQRSTUVWXYZ:・";
+
+function createMatrixRain() {
+  if (!matrixContainer || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const columnCount = Math.min(64, Math.max(12, Math.floor(window.innerWidth / 30)));
+  const columns = document.createDocumentFragment();
 
   for (let i = 0; i < columnCount; i++) {
     const column = document.createElement("div");
-    column.classList.add("binary-column");
+    column.className = "matrix-column";
+    column.setAttribute("aria-hidden", "true");
+    column.style.left = `${(i / columnCount) * 100 + (Math.random() * 1.4 - 0.7)}%`;
 
-    const lineCount = 12 + Math.floor(Math.random() * 24);
-    let binary = "";
+    const duration = 10 + Math.random() * 18;
+    column.style.setProperty("--matrix-duration", `${duration}s`);
+    column.style.setProperty("--matrix-delay", `${-Math.random() * duration}s`);
+    column.style.setProperty("--matrix-size", `${11 + Math.floor(Math.random() * 4)}px`);
 
-    for (let j = 0; j < lineCount; j++) {
-      binary += (Math.random() > 0.45 ? "1" : "0") + "<br>";
+    const glyphCount = 12 + Math.floor(Math.random() * 20);
+    for (let glyphIndex = 0; glyphIndex < glyphCount; glyphIndex++) {
+      const glyph = document.createElement("span");
+      glyph.textContent = matrixCharacters[Math.floor(Math.random() * matrixCharacters.length)];
+      if (glyphIndex === 0) glyph.className = "matrix-head";
+      else if (Math.random() < 0.12) glyph.className = "matrix-dim";
+      column.appendChild(glyph);
     }
 
-    column.innerHTML = binary;
-    column.style.left = (i / columnCount) * 100 + "%";
-    column.style.animationDuration = (8 + Math.random() * 9) + "s";
-    column.style.animationDelay = (Math.random() * 5) + "s";
-    column.style.opacity = 0.5 + Math.random() * 0.5;
-    binaryContainer.appendChild(column);
+    columns.appendChild(column);
   }
+
+  matrixContainer.replaceChildren(columns);
 }
+
+if (matrixContainer) {
+  createMatrixRain();
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(createMatrixRain, 180);
+  });
+}
+
+const matrixToggle = document.getElementById("matrixToggle");
+if (matrixToggle) {
+  matrixToggle.addEventListener("click", () => {
+    const paused = document.body.classList.toggle("matrix-paused");
+    matrixToggle.setAttribute("aria-pressed", String(paused));
+    matrixToggle.setAttribute("aria-label", paused ? "Resume Matrix rain" : "Pause Matrix rain");
+    const label = matrixToggle.querySelector("span");
+    const icon = matrixToggle.querySelector("i");
+    if (label) label.textContent = paused ? "resume rain" : "pause rain";
+    if (icon) icon.className = paused ? "bi bi-play-fill" : "bi bi-pause-fill";
+  });
+}
+
+const commandPalette = document.getElementById("commandPalette");
+const openCommandPalette = document.getElementById("openCommandPalette");
+const closeCommandPalette = document.getElementById("closeCommandPalette");
+const paletteSearch = document.getElementById("paletteSearch");
+const paletteItems = Array.from(document.querySelectorAll("[data-palette-item]"));
+const paletteEmpty = document.getElementById("paletteEmpty");
+const mainNav = document.getElementById("mainNav");
+
+function showCommandPalette() {
+  if (!(commandPalette instanceof HTMLDialogElement) || commandPalette.open) return;
+  commandPalette.showModal();
+  if (paletteSearch) paletteSearch.value = "";
+  updatePaletteResults();
+  paletteSearch?.focus();
+}
+
+function updatePaletteResults() {
+  if (!paletteSearch || !paletteEmpty) return;
+  const query = paletteSearch.value.trim().toLowerCase();
+  let visibleItems = 0;
+
+  paletteItems.forEach((item) => {
+    const keywords = item.dataset.keywords || "";
+    const matches = `${item.textContent} ${keywords}`.toLowerCase().includes(query);
+    item.hidden = !matches;
+    if (matches) visibleItems++;
+  });
+
+  paletteEmpty.hidden = visibleItems > 0;
+}
+
+if (openCommandPalette) openCommandPalette.addEventListener("click", showCommandPalette);
+if (closeCommandPalette && commandPalette) {
+  closeCommandPalette.addEventListener("click", () => commandPalette.close());
+}
+if (paletteSearch) paletteSearch.addEventListener("input", updatePaletteResults);
+if (commandPalette) {
+  commandPalette.addEventListener("click", (event) => {
+    if (event.target === commandPalette) commandPalette.close();
+  });
+  commandPalette.querySelectorAll("[data-palette-item]").forEach((item) => {
+    item.addEventListener("click", () => {
+      commandPalette.close();
+      if (window.innerWidth < 992 && mainNav?.classList.contains("show") && window.bootstrap?.Collapse) {
+        window.bootstrap.Collapse.getOrCreateInstance(mainNav, { toggle: false }).hide();
+      }
+    });
+  });
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && commandPalette?.open) {
+    event.preventDefault();
+    commandPalette.close();
+    return;
+  }
+
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+    event.preventDefault();
+    showCommandPalette();
+  }
+});
 
 const commandOutput = document.getElementById("commandOutput");
 const terminalInput = document.getElementById("terminalInput");

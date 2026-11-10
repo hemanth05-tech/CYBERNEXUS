@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -63,7 +63,7 @@
         </div>
     </div>
 
-    <nav class="cyber-navbar navbar navbar-expand-lg fixed-top">
+    <nav class="cyber-navbar navbar navbar-expand-xl fixed-top">
         <div class="container terminal-nav-shell">
             <a class="navbar-brand" href="#home" aria-label="CyberNexus home">
                 <span class="brand-shell">root@cybernexus:~$</span>
@@ -82,10 +82,44 @@
                     <li class="nav-item"><a class="nav-link" href="#labs">labs</a></li>
                 </ul>
 
-                <a href="#courses" class="nav-button">[ start_learning ]</a>
+                <div class="nav-actions">
+                    <button class="nav-utility-button" id="openCommandPalette" type="button" aria-haspopup="dialog" aria-controls="commandPalette">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        <span>quick jump</span>
+                        <kbd>Ctrl K</kbd>
+                    </button>
+                    <button class="nav-utility-button matrix-toggle" id="matrixToggle" type="button" aria-pressed="false" aria-label="Pause Matrix rain">
+                        <i class="bi bi-pause-fill" aria-hidden="true"></i>
+                        <span>pause rain</span>
+                    </button>
+                    <a href="#courses" class="nav-button">[ start_learning ]</a>
+                </div>
             </div>
         </div>
     </nav>
+
+    <dialog class="command-palette" id="commandPalette" aria-labelledby="commandPaletteTitle">
+        <div class="command-palette-header">
+            <div>
+                <span class="dashboard-eyebrow">CYBERNEXUS NAVIGATION</span>
+                <h2 id="commandPaletteTitle">Where do you want to go?</h2>
+            </div>
+            <button type="button" class="palette-close" id="closeCommandPalette" aria-label="Close quick jump">×</button>
+        </div>
+        <label class="palette-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input id="paletteSearch" type="search" aria-label="Search dashboard sections" placeholder="Search courses, tools, labs..." autocomplete="off">
+        </label>
+        <nav class="palette-links" aria-label="Quick links">
+            <a href="#home" data-palette-item data-keywords="dashboard home progress goals">Dashboard <span>Learning progress & goals</span></a>
+            <a href="#courses" data-palette-item data-keywords="courses modules learning fundamentals">Courses <span>Browse learning modules</span></a>
+            <a href="#tools" data-palette-item data-keywords="tools toolkit wireshark nmap burp zap kali metasploit">Security tools <span>Explore the tool directory</span></a>
+            <a href="#roadmap" data-palette-item data-keywords="roadmap stages journey">Roadmap <span>View learning stages</span></a>
+            <a href="#labs" data-palette-item data-keywords="labs practice terminal simulation">Practice lab <span>Open the simulated terminal</span></a>
+        </nav>
+        <p class="palette-empty" id="paletteEmpty" hidden>No matching sections. Try another search.</p>
+        <p class="palette-hint"><kbd>Esc</kbd> to close <span>·</span> <kbd>Ctrl K</kbd> to open</p>
+    </dialog>
 
     <main id="main-content">
     <section id="home" class="hero">
@@ -180,7 +214,7 @@
                         <span></span>
                         <span></span>
                     </div>
-                    <div class="terminal-title">terminal://cybernexus</div>
+                    <div class="terminal-title">matrix://cybernexus.shell</div>
                 </div>
 
                 <div class="panel-body">
