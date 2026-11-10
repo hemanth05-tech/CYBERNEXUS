@@ -178,13 +178,46 @@ dailyGoalInputs.forEach((input) => {
 
 renderLearningDashboard();
 
+const themeToggle = document.getElementById("themeToggle");
+const themeColor = document.querySelector('meta[name="theme-color"]');
+
+function applyTheme(theme, save = false) {
+  const activeTheme = theme === "light" ? "light" : "dark";
+  document.documentElement.dataset.theme = activeTheme;
+  if (themeColor) themeColor.content = activeTheme === "light" ? "#f3f7f4" : "#050505";
+
+  if (themeToggle) {
+    const isLight = activeTheme === "light";
+    themeToggle.setAttribute("aria-label", `Switch to ${isLight ? "dark" : "light"} theme`);
+    const label = themeToggle.querySelector("span");
+    const icon = themeToggle.querySelector("i");
+    if (label) label.textContent = isLight ? "dark" : "light";
+    if (icon) icon.className = isLight ? "bi bi-moon-stars-fill" : "bi bi-sun-fill";
+  }
+
+  if (save) {
+    try {
+      window.localStorage.setItem("cybernexus-theme", activeTheme);
+    } catch (error) {
+      console.error("Could not save the CyberNexus theme preference.", error);
+    }
+  }
+}
+
+applyTheme(document.documentElement.dataset.theme);
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    const nextTheme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+    applyTheme(nextTheme, true);
+  });
+}
+
 const sections = document.querySelectorAll("section[id]");
 const navLinks = document.querySelectorAll(".nav-link");
+const navbar = document.querySelector(".cyber-navbar");
+if (navbar) navbar.classList.toggle("is-scrolled", window.scrollY > 50);
 window.addEventListener("scroll", () => {
-  const navbar = document.querySelector(".cyber-navbar");
-  if (navbar) {
-    navbar.style.background = window.scrollY > 50 ? "rgba(5, 5, 5, 0.93)" : "rgba(5, 5, 5, 0.8)";
-  }
+  if (navbar) navbar.classList.toggle("is-scrolled", window.scrollY > 50);
 
   let current = "home";
   sections.forEach((section) => {
@@ -202,12 +235,13 @@ window.addEventListener("scroll", () => {
 });
 
 const matrixContainer = document.getElementById("binary-rain");
-const matrixCharacters = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン012345789ABCDEFGHIJKLMNOPQRSTUVWXYZ:・";
+const matrixCharacters = "01010123456789ABCDEF<>[]{}#$@:/";
+const matrixTokens = ["TCP", "TLS", "SSH", "DNS", "HTTP", "AES", "RSA", "SHA", "PKT", "SYN", "ACK", "443", "0x7F", "0xA3"];
 
 function createMatrixRain() {
   if (!matrixContainer || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  const columnCount = Math.min(64, Math.max(12, Math.floor(window.innerWidth / 30)));
+  const columnCount = Math.min(42, Math.max(8, Math.floor(window.innerWidth / 42)));
   const columns = document.createDocumentFragment();
 
   for (let i = 0; i < columnCount; i++) {
@@ -221,13 +255,21 @@ function createMatrixRain() {
     column.style.setProperty("--matrix-delay", `${-Math.random() * duration}s`);
     column.style.setProperty("--matrix-size", `${11 + Math.floor(Math.random() * 4)}px`);
 
-    const glyphCount = 12 + Math.floor(Math.random() * 20);
-    for (let glyphIndex = 0; glyphIndex < glyphCount; glyphIndex++) {
-      const glyph = document.createElement("span");
-      glyph.textContent = matrixCharacters[Math.floor(Math.random() * matrixCharacters.length)];
-      if (glyphIndex === 0) glyph.className = "matrix-head";
-      else if (Math.random() < 0.12) glyph.className = "matrix-dim";
-      column.appendChild(glyph);
+    const rowCount = 12 + Math.floor(Math.random() * 20);
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      if (rowIndex > 0 && Math.random() < 0.12) {
+        const token = document.createElement("span");
+        token.className = "matrix-token";
+        token.textContent = matrixTokens[Math.floor(Math.random() * matrixTokens.length)];
+        column.appendChild(token);
+        continue;
+      }
+
+      const character = document.createElement("span");
+      character.textContent = matrixCharacters[Math.floor(Math.random() * matrixCharacters.length)];
+      if (rowIndex === 0) character.className = "matrix-head";
+      else if (Math.random() < 0.12) character.className = "matrix-dim";
+      column.appendChild(character);
     }
 
     columns.appendChild(column);
